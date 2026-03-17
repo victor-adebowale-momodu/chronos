@@ -1,6 +1,9 @@
-def main():
-    print("Hello from chronos!")
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
+
+app = FastAPI()
 
 
-if __name__ == "__main__":
-    main()
+@app.get("/", response_class=FileResponse)
+async def home():
+    return FileResponse("web/index.html")
