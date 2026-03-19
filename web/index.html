@@ -18,7 +18,8 @@
         </div>
     </body>
     <script>
-        const DURATION_SECS = 10;
+        const DURATION_SECS = 1500;
+        const INCREMENT_SECS = 30;
         document.addEventListener("alpine:init", () => {
             Alpine.data("pomodoroTimer", () => ({
                 isRunning: false,
@@ -54,7 +55,7 @@
                     this.seconds = DURATION_SECS;
                 },
                 addTime() {
-                    this.seconds += 30;
+                    this.seconds += INCREMENT_SECSi;
                 },
                 showPlayOrPause() {
                     return this.isPaused ? "Play" : "Pause";
