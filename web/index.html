@@ -7,6 +7,64 @@
         ></script>
     </head>
     <body>
-        <h1 x-data="{ message: 'I ❤️ Alpine' }" x-text="message"></h1>
+        <div x-data="pomodoroTimer()">
+            <div x-text="formatTime()"></div>
+            <button
+                @click="onPlayOrPause()"
+                x-text="showPlayOrPause()"
+            ></button>
+            <button @click="onReset()" x-show="isRunning">Reset</button>
+            <button @click="addTime()" x-show="isRunning">+ 30s</button>
+        </div>
     </body>
+    <script>
+        const DURATION_SECS = 10;
+        document.addEventListener("alpine:init", () => {
+            Alpine.data("pomodoroTimer", () => ({
+                isRunning: false,
+                isPaused: true,
+                timer: null,
+                seconds: DURATION_SECS,
+
+                init() {},
+                onPlayOrPause() {
+                    if (this.isPaused) {
+                        if (!this.isRunning) {
+                            this.isRunning = true;
+                        }
+
+                        this.isPaused = false;
+                        this.timer = setInterval(() => {
+                            if (this.seconds > 0) {
+                                this.seconds--;
+                            } else {
+                                alert("Time is up!");
+                                this.onReset();
+                            }
+                        }, 1000);
+                    } else {
+                        this.isPaused = true;
+                        clearInterval(this.timer);
+                    }
+                },
+                onReset() {
+                    this.isRunning = false;
+                    this.isPaused = true;
+                    clearInterval(this.timer);
+                    this.seconds = DURATION_SECS;
+                },
+                addTime() {
+                    this.seconds += 30;
+                },
+                showPlayOrPause() {
+                    return this.isPaused ? "Play" : "Pause";
+                },
+                formatTime() {
+                    MM = `${Math.floor(this.seconds / 60)}`.padStart(2, "0");
+                    SS = `${this.seconds % 60}`.padStart(2, "0");
+                    return `${MM}:${SS}`;
+                },
+            }));
+        });
+    </script>
 </html>
