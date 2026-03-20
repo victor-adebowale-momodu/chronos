@@ -7,3 +7,7 @@ app = FastAPI()
 @app.get("/", response_class=FileResponse)
 async def home():
     return FileResponse("web/index.html")
+
+
+@app.post("/actions")
+async def actions(): ...
