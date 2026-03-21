@@ -1,27 +1,54 @@
 <!doctype html>
 <html lang="en">
     <head>
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined"
+            rel="stylesheet"
+        />
         <script
             defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
         ></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <script type="importmap">
+            {
+                "imports": {
+                    "@material/web/": "https://esm.run/@material/web/"
+                }
+            }
+        </script>
+        <script type="module">
+            import "@material/web/all.js";
+            import { styles as typescaleStyles } from "@material/web/typography/md-typescale-styles.js";
+            document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+        </script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
     </head>
     <body>
-        <div x-data="pomodoroTimer()">
+        <div class="pomodorro-timer" x-data="pomodorroTimer()">
             <div x-text="formatTime()"></div>
+
             <button
                 @click="onPlayOrPause()"
-                x-text="showPlayOrPause()"
+                x-text="isPaused ? 'Play' : 'Pause'"
             ></button>
             <button @click="onReset()" x-show="isRunning">Reset</button>
-            <button @click="addTime()" x-show="isRunning">+ 30s</button>
         </div>
     </body>
     <script>
         const DURATION_SECS = 1500;
         const INCREMENT_SECS = 30;
         document.addEventListener("alpine:init", () => {
-            Alpine.data("pomodoroTimer", () => ({
+            Alpine.data("pomodorroTimer", () => ({
                 isRunning: false,
                 isPaused: true,
                 timer: null,
@@ -56,9 +83,6 @@
                 },
                 addTime() {
                     this.seconds += INCREMENT_SECS;
-                },
-                showPlayOrPause() {
-                    return this.isPaused ? "Play" : "Pause";
                 },
                 formatTime() {
                     MM = `${Math.floor(this.seconds / 60)}`.padStart(2, "0");
