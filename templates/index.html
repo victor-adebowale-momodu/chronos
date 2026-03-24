@@ -1,18 +1,32 @@
 <!doctype html>
 <html lang="en">
     <head>
+        <meta charset="UTF-8" />
+        <title>ChronOS | The Operating System for Focus.</title>
+
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined"
+            href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap"
             rel="stylesheet"
         />
-        <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-        ></script>
         <link
             href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
             rel="stylesheet"
         />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined"
+            rel="stylesheet"
+        />
+
+        <!-- Alpine.js -->
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+        ></script>
+
+        <!-- Material Web Components -->
         <script type="importmap">
             {
                 "imports": {
@@ -25,68 +39,246 @@
             import { styles as typescaleStyles } from "@material/web/typography/md-typescale-styles.js";
             document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
         </script>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap"
-            rel="stylesheet"
-        />
-    </head>
-    <body>
-        <div class="pomodorro-timer" x-data="pomodorroTimer()">
-            <div x-text="formatTime()"></div>
 
-            <button
-                @click="onPlayOrPause()"
-                x-text="isPaused ? 'Play' : 'Pause'"
-            ></button>
-            <button @click="onReset()" x-show="isRunning">Reset</button>
+        <style>
+            :root {
+                --color-background: #111318;
+                --color-surface: #2b2d35;
+                --color-track: #545a61;
+                --color-text-primary: #ffffff;
+
+                --timer-size: 200px;
+                --ring-radius: 45;
+                --ring-stroke-width: 4;
+
+                --card-border-radius: 40px;
+                --card-padding: 4rem;
+
+                --button-border-radius: 16px;
+                --button-size: 56px;
+                --button-label-size: 12px;
+
+                --font-mono: "Fira Code", monospace;
+                --font-sans: "Roboto", sans-serif;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background-color: var(--color-background);
+                font-family: var(--font-sans);
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            md-filled-tonal-button {
+                --md-filled-tonal-button-container-shape: var(
+                    --button-border-radius
+                );
+                --md-filled-tonal-button-label-text-size: var(
+                    --button-label-size
+                );
+                width: var(--button-size);
+                height: var(--button-size);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .timer-card {
+                background-color: var(--color-surface);
+                border-radius: var(--card-border-radius);
+                padding: var(--card-padding);
+                display: flex;
+                gap: 2rem;
+                align-items: center;
+            }
+
+            .timer-ring-container {
+                position: relative;
+                width: var(--timer-size);
+                height: var(--timer-size);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .timer-display {
+                position: absolute;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: var(--color-text-primary);
+            }
+
+            .timer-display__time {
+                font-family: var(--font-mono);
+                font-size: 2rem;
+                font-weight: 700;
+                line-height: 1;
+            }
+
+            .timer-display__reset {
+                padding-top: 8px;
+                cursor: pointer;
+            }
+
+            .timer-controls {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="timer-card" x-data="pomodoroTimer()">
+            <div class="timer-ring-container">
+                <svg
+                    class="timer-ring"
+                    width="200"
+                    height="200"
+                    viewBox="0 0 100 100"
+                >
+                    <circle
+                        class="timer-ring__track"
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        stroke="var(--color-track)"
+                        stroke-width="4"
+                    />
+                </svg>
+
+                <div class="timer-display">
+                    <span
+                        class="timer-display__time"
+                        x-text="formatTime()"
+                    ></span>
+                    <md-icon
+                        class="timer-display__reset"
+                        x-show="timerState !== TimerState.IDLE"
+                        @click="onReset()"
+                        >replay</md-icon
+                    >
+                </div>
+            </div>
+
+            <div class="timer-controls">
+                <md-fab @click="onPlayOrPause()">
+                    <md-icon
+                        slot="icon"
+                        x-text="timerState === TimerState.RUNNING ? 'pause' : 'play_arrow'"
+                    ></md-icon>
+                </md-fab>
+
+                <md-filled-tonal-button @click="addTime()"
+                    >+1:00</md-filled-tonal-button
+                >
+            </div>
         </div>
     </body>
+
     <script>
-        const DURATION_SECS = 1500;
-        const INCREMENT_SECS = 30;
+        const DEFAULT_DURATION_SECS = 25 * 60; // 25 minutes
+        const INCREMENT_SECS = 60; // +1 minute per tap
+        const STORAGE_KEY = "chronos_timer";
+        const TimerState = Object.freeze({
+            IDLE: "idle",
+            RUNNING: "running",
+            PAUSED: "paused",
+        });
+
+        function saveTimerData(seconds, timerState) {
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({ seconds, timerState }),
+            );
+        }
+
+        function loadTimerData() {
+            const timerData = localStorage.getItem(STORAGE_KEY);
+            return timerData ? JSON.parse(timerData) : null;
+        }
+
         document.addEventListener("alpine:init", () => {
-            Alpine.data("pomodorroTimer", () => ({
-                isRunning: false,
-                isPaused: true,
-                timer: null,
-                seconds: DURATION_SECS,
+            Alpine.data("pomodoroTimer", () => ({
+                seconds: DEFAULT_DURATION_SECS,
+                timerState: TimerState.IDLE,
+                _interval: null,
 
-                init() {},
-                onPlayOrPause() {
-                    if (this.isPaused) {
-                        if (!this.isRunning) {
-                            this.isRunning = true;
+                init() {
+                    const timerData = loadTimerData();
+                    if (timerData) {
+                        this.seconds = timerData.seconds;
+                        if (timerData.timerState === TimerState.RUNNING) {
+                            this._startTimer();
                         }
+                    }
 
-                        this.isPaused = false;
-                        this.timer = setInterval(() => {
-                            if (this.seconds > 0) {
-                                this.seconds--;
-                            } else {
-                                alert("Time is up!");
-                                this.onReset();
-                            }
-                        }, 1000);
+                    this.$watch("seconds", (val) =>
+                        saveTimerData(val, this.timerState),
+                    );
+                    this.$watch("timerState", (val) =>
+                        saveTimerData(this.seconds, val),
+                    );
+                },
+
+                onPlayOrPause() {
+                    if (this.timerState === TimerState.RUNNING) {
+                        this._pauseTimer();
                     } else {
-                        this.isPaused = true;
-                        clearInterval(this.timer);
+                        this._startTimer();
                     }
                 },
+
                 onReset() {
-                    this.isRunning = false;
-                    this.isPaused = true;
-                    clearInterval(this.timer);
-                    this.seconds = DURATION_SECS;
+                    this._clearInterval();
+                    this.timerState = TimerState.IDLE;
+                    this.seconds = DEFAULT_DURATION_SECS;
                 },
+
                 addTime() {
                     this.seconds += INCREMENT_SECS;
                 },
+
                 formatTime() {
-                    MM = `${Math.floor(this.seconds / 60)}`.padStart(2, "0");
-                    SS = `${this.seconds % 60}`.padStart(2, "0");
-                    return `${MM}:${SS}`;
+                    const minutes = String(
+                        Math.floor(this.seconds / 60),
+                    ).padStart(2, "0");
+                    const secs = String(this.seconds % 60).padStart(2, "0");
+                    return `${minutes}:${secs}`;
+                },
+
+                _startTimer() {
+                    this.timerState = TimerState.RUNNING;
+                    this._interval = setInterval(() => {
+                        if (this.seconds > 0) {
+                            this.seconds--;
+                        } else {
+                            alert("Time is up!");
+                            this.onReset();
+                        }
+                    }, 1000);
+                },
+
+                _pauseTimer() {
+                    this.timerState = TimerState.PAUSED;
+                    this._clearInterval();
+                },
+
+                _clearInterval() {
+                    clearInterval(this._interval);
+                    this._interval = null;
                 },
             }));
         });
