@@ -1,19 +1,12 @@
-import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi_users import FastAPIUsers
 
 from app.auth import auth_backend
 from app.database import engine
-from app.user_manager import get_user_manager
-from app.models import User
-
-fastapi_users = FastAPIUsers[User, uuid.UUID](
-    get_user_manager,
-    [auth_backend],
-)
+from app.routers import backend, frontend
+from app.schema import UserCreate, UserRead, UserUpdate
+from app.users import fastapi_users
 
 
 @asynccontextmanager
@@ -25,6 +18,27 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.get("/", response_class=FileResponse)
-async def index():
-    return FileResponse("templates/index.html")
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth/jwt",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_reset_password_router(),
+    prefix="/auth",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_users_router(UserRead, UserUpdate),
+    prefix="/users",
+    tags=["users"],
+)
+
+
+app.include_router(frontend.router)
+app.include_router(backend.router)
