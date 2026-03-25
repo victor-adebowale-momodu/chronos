@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from app.auth import auth_backend
 from app.database import engine
 from app.routers import backend, frontend
-from app.schema import UserCreate, UserRead, UserUpdate
+from app.schemas.users import UserCreate, UserRead, UserUpdate
 from app.users import fastapi_users
 
 
