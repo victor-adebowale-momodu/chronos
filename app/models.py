@@ -10,13 +10,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
 
-class EventType(enum.StrEnum):
-    STARTED = "started"
-    PAUSED = "paused"
-    RESUMED = "resumed"
-    COMPLETED = "completed"
-
-
 class User(SQLAlchemyBaseUserTableUUID, Base):
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
 
@@ -39,24 +32,8 @@ class Session(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
     )
+    start_datetime: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    end_datetime: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    set_duration: Mapped[int]
 
     user: Mapped["User"] = relationship(back_populates="sessions")
-    events: Mapped[List["Event"]] = relationship(
-        back_populates="session",
-        cascade="all, delete-orphan",
-    )
-
-
-class Event(Base):
-    __tablename__ = "events"
-
-    id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sessions.id"), index=True)
-    event_type: Mapped[EventType] = mapped_column(Enum(EventType))
-    timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
-
-    session: Mapped["Session"] = relationship(back_populates="events")
