@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>ChronOS</title>
+
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+        ></script>
+
+        <style>
+            body {
+                margin: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div x-data="loginForm()">
+            <form
+                action="/auth/jwt/login"
+                method="POST"
+                @submit.prevent="submitData"
+            >
+                <div>
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        x-model="email"
+                        required
+                        placeholder="name@example.com"
+                    />
+                </div>
+
+                <div>
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        x-model="password"
+                        required
+                    />
+                </div>
+
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <script>
+            function signupForm() {
+                return {
+                    formData: {
+                        email: "",
+                        password: "",
+                    },
+
+                    async submitData() {
+                        try {
+                            const response = await fetch("/auth/jwt/login", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(this.formData),
+                            });
+
+                            if (response.ok) {
+                                const result = await response.json();
+                                console.log("Success:", result);
+                            } else {
+                                console.error("Server error");
+                            }
+                        } catch (error) {
+                            console.error("Network error:", error);
+                        }
+                    },
+                };
+            }
+        </script>
+    </body>
+</html>

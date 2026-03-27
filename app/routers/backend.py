@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -51,3 +51,5 @@ async def get_sessions(
 
     result = await db.execute(stmt)
     sessions = result.scalars().all()
+
+    return sessions

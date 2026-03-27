@@ -1,17 +1,16 @@
-import enum
 import uuid
 from datetime import datetime, timezone
 from typing import List
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import DateTime, Enum, ForeignKey, String, Uuid
+from sqlalchemy import DateTime, ForeignKey, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
-    username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    full_name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
 
     sessions: Mapped[List["Session"]] = relationship(
         back_populates="user",

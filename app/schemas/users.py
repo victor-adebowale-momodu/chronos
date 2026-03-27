@@ -6,14 +6,14 @@ from pydantic import ConfigDict
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
-    username: str
+    full_name: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class UserCreate(schemas.BaseUserCreate):
-    username: str
+    full_name: str
 
 
 class UserUpdate(schemas.BaseUserUpdate):
-    username: Optional[str] = None
+    full_name: Optional[str] = None

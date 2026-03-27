@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>ChronOS</title>
+
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+        ></script>
+
+        <style>
+            body {
+                margin: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div x-data="signupForm()">
+            <form
+                action="/auth/jwt/register"
+                method="POST"
+                @submit.prevent="submitData"
+            >
+                <div>
+                    <label for="name">Full Name</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        x-model="formData.full_name"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        x-model="formData.email"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        x-model="formData.password"
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        x-model="formData.confirmPassword"
+                        required
+                    />
+                </div>
+
+                <template x-if="passwordMismatch">
+                    <p>Passwords do not match.</p>
+                </template>
+
+                <button type="submit" :disabled="passwordMismatch">
+                    Signup
+                </button>
+            </form>
+        </div>
+
+        <script>
+            function signupForm() {
+                return {
+                    formData: {
+                        full_name: "",
+                        email: "",
+                        password: "",
+                        confirmPassword: "",
+                    },
+
+                    get passwordMismatch() {
+                        return (
+                            this.formData.confirmPassword !== "" &&
+                            this.formData.password !==
+                                this.formData.confirmPassword
+                        );
+                    },
+
+                    async submitData() {
+                        if (this.passwordMismatch) return;
+                        const { confirmPassword, ...payload } = this.formData;
+                        console.log("Sending", JSON.stringify(payload));
+
+                        try {
+                            const response = await fetch("/auth/jwt/register", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(payload),
+                            });
+
+                            if (response.ok) {
+                                const result = await response.json();
+                                console.log("Success:", result);
+                            } else {
+                                console.error("Server error");
+                            }
+                        } catch (error) {
+                            console.error("Network error:", error);
+                        }
+                    },
+                };
+            }
+        </script>
+    </body>
+</html>

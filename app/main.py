@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from sqlalchemy import text
 
 from app.auth import auth_backend
-from app.database import engine
+from app.database import connect_db, engine
 from app.routers import backend, frontend
 from app.schemas.users import UserCreate, UserRead, UserUpdate
 from app.users import fastapi_users
@@ -11,6 +12,8 @@ from app.users import fastapi_users
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await connect_db()
+
     yield
     await engine.dispose()
 
