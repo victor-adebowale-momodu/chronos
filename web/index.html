@@ -21,6 +21,22 @@
     </head>
 
     <body>
+        <nav x-data="auth" x-init="checkSession()">
+            <template x-if="user">
+                <div>
+                    <span>Welcome, <span x-text="user.full_name"></span></span>
+                    <button @click="logout()">Logout</button>
+                </div>
+            </template>
+
+            <template x-if="!user && !loading">
+                <div>
+                    <a href="/login">Login</a>
+                    <a href="/signup">Signup</a>
+                </div>
+            </template>
+        </nav>
+
         <div x-data="timer()">
             <div>
                 <span x-text="formatTime()"></span>
@@ -39,40 +55,61 @@
                     ></span>
                 </button>
 
-                <button @click="addTime()">+1:00</button>
+                <button
+                    @click="addTime()"
+                    x-show="timerState === TimerState.IDLE"
+                >
+                    +1:00
+                </button>
             </div>
         </div>
 
         <script>
             const DEFAULT_DURATION_SECS = 25 * 60;
             const INCREMENT_SECS = 60;
-            const STORAGE_KEY = "chronos_timer";
+            const SESSION_STORAGE_KEY = "chronos_storage";
+            const TIMER_STORAGE_KEY = "chronos_timer";
+            
+            
             const TimerState = Object.freeze({
                 IDLE: "idle",
                 RUNNING: "running",
                 PAUSED: "paused",
             });
 
-            function saveTimerData(seconds, timerState) {
-                localStorage.setItem(
-                    STORAGE_KEY,
-                    JSON.stringify({ seconds, timerState }),
-                );
-            }
-
-            function loadTimerData() {
-                const timerData = localStorage.getItem(STORAGE_KEY);
-                return timerData ? JSON.parse(timerData) : null;
-            }
-
             document.addEventListener("alpine:init", () => {
+                Alpine.data("auth", () => ({
+                    user: null,
+                    loading: true,
+
+                    init() {
+                        this.checkSession();
+                    },
+
+                    async checkSession() {
+                        try {
+                            const response = await fetch("/users/me");
+                            if (response.ok) this.user = await response.json();
+                        } catch (err) {
+                            console.error("Auth check failed", err);
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+
+                    async logout() {
+                        await fetch("/auth/logout", { method: "POST" });
+                        window.location.reload();
+                    },
+                }));
+
                 Alpine.data("timer", () => ({
                     seconds: DEFAULT_DURATION_SECS,
                     timerState: TimerState.IDLE,
                     _interval: null,
 
                     init() {
-                        const timerData = loadTimerData();
+                        const timerData = this._loadTimerData();
                         if (timerData) {
                             this.seconds = timerData.seconds;
                             if (timerData.timerState === TimerState.RUNNING) {
@@ -81,19 +118,29 @@
                         }
 
                         this.$watch("seconds", (val) =>
-                            saveTimerData(val, this.timerState),
+                            this._saveTimerData(val, this.timerState),
                         );
                         this.$watch("timerState", (val) =>
-                            saveTimerData(this.seconds, val),
+                            this._saveTimerData(this.seconds, val),
                         );
                     },
 
+                    _saveTimerData(seconds, timerState) {
+                        localStorage.setItem(
+                            TIMER_STORAGE_KEY,
+                            JSON.stringify({ seconds, timerState }),
+                        );
+                    },
+
+                    _loadTimerData() {
+                        const timerData = localStorage.getItem(TIMER_STORAGE_KEY);
+                        return timerData ? JSON.parse(timerData) : null;
+                    },
+
                     onPlayOrPause() {
-                        if (this.timerState === TimerState.RUNNING) {
-                            this._pauseTimer();
-                        } else {
-                            this._startTimer();
-                        }
+                        this.timerState === TimerState.RUNNING
+                            ? this._pauseTimer()
+                            : this._startTimer();
                     },
 
                     onReset() {
@@ -135,6 +182,10 @@
                         clearInterval(this._interval);
                         this._interval = null;
                     },
+
+                    _startSession() {},
+                    
+                    _endSession() {},
                 }));
             });
         </script>

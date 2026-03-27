@@ -16,8 +16,10 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = settings.reset_password_token_secret
     verification_token_secret = settings.verification_token_secret
 
-    async def on_after_register(self, user: User, request: Optional[Request] = None):
-        print(f"User {user.id} has registered.")
+    async def on_after_register(
+        self, user: User, request: Optional[Request] = None
+    ):
+        await self.user_db.update(user, {"is_verified": True})
 
 
 async def get_user_db(session: AsyncSession = Depends(get_db)):
