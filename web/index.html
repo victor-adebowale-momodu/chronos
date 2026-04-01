@@ -13,23 +13,28 @@
             body {
                 margin: 0;
                 display: flex;
+                flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 min-height: 100vh;
+                font-family: sans-serif;
             }
         </style>
     </head>
 
-    <body>
-        <nav x-data="auth" x-init="checkSession()">
-            <template x-if="user">
+    <body x-data>
+        <nav x-init="$store.auth.checkSession()">
+            <template x-if="$store.auth.user">
                 <div>
-                    <span>Welcome, <span x-text="user.full_name"></span></span>
-                    <button @click="logout()">Logout</button>
+                    <span
+                        >Welcome,
+                        <span x-text="$store.auth.user.full_name"></span
+                    ></span>
+                    <button @click="$store.auth.logout()">Logout</button>
                 </div>
             </template>
 
-            <template x-if="!user && !loading">
+            <template x-if="!$store.auth.user && !$store.auth.loading">
                 <div>
                     <a href="/login">Login</a>
                     <a href="/signup">Signup</a>
@@ -37,27 +42,29 @@
             </template>
         </nav>
 
-        <div x-data="timer()">
+        <div>
             <div>
-                <span x-text="formatTime()"></span>
+                <span x-text="$store.timer.format"></span>
                 <button
-                    x-show="timerState !== TimerState.IDLE"
-                    @click="onReset()"
+                    x-show="$store.timer.state !== 'idle'"
+                    @click="$store.timer.reset()"
                 >
                     reset
                 </button>
             </div>
 
             <div>
-                <button @click="onPlayOrPause()">
+                <button
+                    @click="$store.timer.state === 'running' ? $store.timer.pause() : $store.timer.start()"
+                >
                     <span
-                        x-text="timerState === TimerState.RUNNING ? 'pause' : 'play'"
+                        x-text="$store.timer.state === 'running' ? 'pause' : 'play'"
                     ></span>
                 </button>
 
                 <button
-                    @click="addTime()"
-                    x-show="timerState === TimerState.IDLE"
+                    @click="$store.timer.addToTimer()"
+                    x-show="$store.timer.state === 'idle'"
                 >
                     +1:00
                 </button>
@@ -66,25 +73,12 @@
 
         <script>
             const DEFAULT_DURATION_SECS = 25 * 60;
-            const INCREMENT_SECS = 60;
-            const SESSION_STORAGE_KEY = "chronos_storage";
-            const TIMER_STORAGE_KEY = "chronos_timer";
-            
-            
-            const TimerState = Object.freeze({
-                IDLE: "idle",
-                RUNNING: "running",
-                PAUSED: "paused",
-            });
+            const INCREMENT_DURATION_SECS = 60;
 
             document.addEventListener("alpine:init", () => {
-                Alpine.data("auth", () => ({
+                Alpine.store("auth", {
                     user: null,
                     loading: true,
-
-                    init() {
-                        this.checkSession();
-                    },
 
                     async checkSession() {
                         try {
@@ -98,95 +92,76 @@
                     },
 
                     async logout() {
-                        await fetch("/auth/logout", { method: "POST" });
-                        window.location.reload();
+                        try {
+                            await fetch("/auth/logout", { method: "POST" });
+                        } finally {
+                            this.user = null;
+                            window.location.reload();
+                        }
                     },
-                }));
+                });
 
-                Alpine.data("timer", () => ({
-                    seconds: DEFAULT_DURATION_SECS,
-                    timerState: TimerState.IDLE,
+                Alpine.store("timer", {
+                    seconds: Number(
+                        localStorage.getItem("chronos_seconds") ??
+                            DEFAULT_DURATION_SECS,
+                    ),
+                    state: localStorage.getItem("chronos_state") ?? "idle",
                     _interval: null,
 
                     init() {
-                        const timerData = this._loadTimerData();
-                        if (timerData) {
-                            this.seconds = timerData.seconds;
-                            if (timerData.timerState === TimerState.RUNNING) {
-                                this._startTimer();
-                            }
+                        if (this.state === "running") {
+                            this.start();
                         }
-
-                        this.$watch("seconds", (val) =>
-                            this._saveTimerData(val, this.timerState),
-                        );
-                        this.$watch("timerState", (val) =>
-                            this._saveTimerData(this.seconds, val),
-                        );
                     },
 
-                    _saveTimerData(seconds, timerState) {
-                        localStorage.setItem(
-                            TIMER_STORAGE_KEY,
-                            JSON.stringify({ seconds, timerState }),
-                        );
+                    _save() {
+                        localStorage.setItem("chronos_seconds", this.seconds);
+                        localStorage.setItem("chronos_state", this.state);
                     },
 
-                    _loadTimerData() {
-                        const timerData = localStorage.getItem(TIMER_STORAGE_KEY);
-                        return timerData ? JSON.parse(timerData) : null;
-                    },
+                    start() {
+                        if (this._interval) clearInterval(this._interval);
+                        this.state = "running";
+                        this._save();
 
-                    onPlayOrPause() {
-                        this.timerState === TimerState.RUNNING
-                            ? this._pauseTimer()
-                            : this._startTimer();
-                    },
-
-                    onReset() {
-                        this._clearInterval();
-                        this.timerState = TimerState.IDLE;
-                        this.seconds = DEFAULT_DURATION_SECS;
-                    },
-
-                    addTime() {
-                        this.seconds += INCREMENT_SECS;
-                    },
-
-                    formatTime() {
-                        const minutes = String(
-                            Math.floor(this.seconds / 60),
-                        ).padStart(2, "0");
-                        const secs = String(this.seconds % 60).padStart(2, "0");
-                        return `${minutes}:${secs}`;
-                    },
-
-                    _startTimer() {
-                        this.timerState = TimerState.RUNNING;
                         this._interval = setInterval(() => {
                             if (this.seconds > 0) {
                                 this.seconds--;
+                                this._save();
                             } else {
+                                this.reset();
                                 alert("Time is up!");
-                                this.onReset();
                             }
                         }, 1000);
                     },
 
-                    _pauseTimer() {
-                        this.timerState = TimerState.PAUSED;
-                        this._clearInterval();
-                    },
-
-                    _clearInterval() {
+                    pause() {
+                        this.state = "paused";
+                        this._save();
                         clearInterval(this._interval);
                         this._interval = null;
                     },
 
-                    _startSession() {},
-                    
-                    _endSession() {},
-                }));
+                    reset() {
+                        this.pause();
+                        this.state = "idle";
+                        this.seconds = DEFAULT_DURATION_SECS;
+                        this._save();
+                    },
+
+                    addToTimer() {
+                        this.seconds += INCREMENT_DURATION_SECS;
+                    },
+
+                    get format() {
+                        const mins = String(
+                            Math.floor(this.seconds / 60),
+                        ).padStart(2, "0");
+                        const secs = String(this.seconds % 60).padStart(2, "0");
+                        return `${mins}:${secs}`;
+                    },
+                });
             });
         </script>
     </body>
