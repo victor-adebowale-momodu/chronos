@@ -23,6 +23,45 @@
     </head>
 
     <body>
-        
+        <script>
+            const api = {
+                async getMe() {
+                    try {
+                        const res = await fetch("/users/me");
+                        if (!res.ok) return null;
+                        return res.json();
+                    } catch {
+                        return null;
+                    }
+                },
+
+                async logout() {
+                    try {
+                        await fetch("/auth/logout", { method: "POST" });
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                },
+            };
+            
+            
+
+            Alpine.store("auth", {
+                user: null,
+                loading: true,
+
+                async checkSession() {
+                    this.user = await api.getMe();
+                    this.loading = false;
+                },
+
+                async logout() {
+                    await api.logout();
+                    this.user = null;
+                    window.location.reload();
+                },
+            });
+        </script>
     </body>
 </html>

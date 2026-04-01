@@ -52,6 +52,20 @@
         </div>
 
         <script>
+            const api = {
+                async login(payload) {
+                    const response = await fetch("/auth/login", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: payload,
+                    });
+                    if (!response.ok) throw new Error("User login failed");
+                    return response;
+                },
+            };
+
             document.addEventListener("alpine:init", () => {
                 Alpine.data("loginForm", () => ({
                     formData: {
@@ -64,29 +78,8 @@
                         params.append("username", this.formData.email);
                         params.append("password", this.formData.password);
 
-                        try {
-                            const response = await fetch("/auth/login", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type":
-                                        "application/x-www-form-urlencoded",
-                                },
-                                body: params,
-                            });
-
-                            if (response.ok) {
-                                if (response.status !== 204) {
-                                    const result = await response.json();
-                                    console.log("Success:", result);
-                                }
-
-                                window.location.href = "/";
-                            } else {
-                                console.error("Server error");
-                            }
-                        } catch (error) {
-                            console.error("Network error:", error);
-                        }
+                        await api.login(params);
+                        window.location.href = "/";
                     },
                 }));
             });

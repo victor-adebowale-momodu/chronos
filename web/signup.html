@@ -82,6 +82,18 @@
         </div>
 
         <script>
+            const api = {
+                async signup(payload) {
+                    const response = await fetch("/auth/register", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: payload,
+                    });
+                    if (!response.ok) throw new Error("User signup failed");
+                    return response;
+                },
+            };
+
             document.addEventListener("alpine:init", () => {
                 Alpine.data("signupForm", () => ({
                     formData: {
@@ -103,23 +115,8 @@
                         if (this.passwordMismatch) return;
                         const { confirmPassword, ...payload } = this.formData;
 
-                        try {
-                            const response = await fetch("/auth/register", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify(payload),
-                            });
-
-                            if (response.ok) {
-                                const result = await response.json();
-                                console.log("Success:", result);
-                                window.location.href = "/";
-                            } else {
-                                console.error("Server error");
-                            }
-                        } catch (error) {
-                            console.error("Network error:", error);
-                        }
+                        await api.signup(JSON.stringify(payload));
+                        window.location.href = "/";
                     },
                 }));
             });
