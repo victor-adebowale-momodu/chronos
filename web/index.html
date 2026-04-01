@@ -79,7 +79,7 @@
                 async getMe() {
                     const response = await fetch("/users/me");
                     if (!response.ok) throw new Error("User not authenticated");
-                    return response.json();
+                    return response;
                 },
 
                 async logout() {

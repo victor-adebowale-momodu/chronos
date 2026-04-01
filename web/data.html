@@ -22,45 +22,41 @@
         </style>
     </head>
 
-    <body>
+    <body x-data>
+        <nav x-init="$store.auth.checkSession()">
+            <template x-if="$store.auth.user">
+                <div>
+                    <span
+                        >Welcome,
+                        <span x-text="$store.auth.user.full_name"></span
+                    ></span>
+                    <button @click="$store.auth.logout()">Logout</button>
+                </div>
+            </template>
+
+            <template x-if="!$store.auth.user && !$store.auth.loading">
+                <div>
+                    <a href="/login">Login</a>
+                    <a href="/signup">Signup</a>
+                </div>
+            </template>
+        </nav>
+
+        <div></div>
+
         <script>
             const api = {
-                async getMe() {
-                    try {
-                        const res = await fetch("/users/me");
-                        if (!res.ok) return null;
-                        return res.json();
-                    } catch {
-                        return null;
-                    }
-                },
-
-                async logout() {
-                    try {
-                        await fetch("/auth/logout", { method: "POST" });
-                        return true;
-                    } catch {
-                        return false;
-                    }
+                async getSessions(payload) {
+                    const response = await fetch("/sessions");
+                    if (!response.ok) throw new Error("Sessions not retrieved");
+                    return response;
                 },
             };
-            
-            
 
-            Alpine.store("auth", {
-                user: null,
-                loading: true,
-
-                async checkSession() {
-                    this.user = await api.getMe();
-                    this.loading = false;
-                },
-
-                async logout() {
-                    await api.logout();
-                    this.user = null;
-                    window.location.reload();
-                },
+            document.addEventListener("alpine:init", () => {
+                Alpine.store("sessions", {
+                    
+                });
             });
         </script>
     </body>

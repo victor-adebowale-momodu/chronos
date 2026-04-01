@@ -13,16 +13,14 @@ router = APIRouter(prefix="/api")
 
 
 @router.post("/sessions")
-async def create_session(
-    body: SessionCreate,
+async def create_sessions(
+    body: list[SessionCreate],
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    session = Session(user_id=user.id, **body.model_dump())
-    db.add(session)
+    sessions = [Session(user_id=user.id, **session.model_dump()) for session in body]
+    db.add_all(sessions)
     await db.commit()
-    await db.refresh(session)
-    return session
 
 
 @router.get("/sessions")
