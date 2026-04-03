@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse
 
 router = APIRouter()
-BASE_PATH = Path(__file__).parent.parent.parent / "web"
+BASE_PATH = Path(__file__).parent.parent.parent / "web/templates"
 
 
 @router.get("/")
