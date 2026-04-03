@@ -20,3 +20,8 @@ async def signup():
 @router.get("/login")
 async def login():
     return FileResponse(BASE_PATH / "login.html")
+
+
+@router.get("/data")
+async def data():
+    return FileResponse(BASE_PATH / "data.html")

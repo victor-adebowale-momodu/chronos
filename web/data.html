@@ -46,8 +46,8 @@
 
         <script>
             const api = {
-                async getSessions(payload) {
-                    const response = await fetch("/sessions");
+                async getSessions() {
+                    const response = await fetch("/api/sessions");
                     if (!response.ok) throw new Error("Sessions not retrieved");
                     return response;
                 },
@@ -55,7 +55,10 @@
 
             document.addEventListener("alpine:init", () => {
                 Alpine.store("sessions", {
-                    
+                    async fetchSessions() {
+                        const response = await api.getSessions();
+                        console.log(response.json());
+                    },
                 });
             });
         </script>
