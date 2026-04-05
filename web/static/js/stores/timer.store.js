@@ -3,7 +3,7 @@ import { getSetting, setSetting, createSession } from "../db.js";
 const DEFAULT_DURATION_SECS = 1 * 60;
 const INCREMENT_DURATION_SECS = 60;
 
-export const timerStore = {
+const timerStore = {
     seconds: null,
     state: null,
     _interval: null,
@@ -80,3 +80,5 @@ export const timerStore = {
         return `${mins}:${secs}`;
     },
 };
+
+export default timerStore;

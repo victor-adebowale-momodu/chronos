@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>ChronOS</title>
+
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+        ></script>
+
+        <style>
+            body {
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                font-family: sans-serif;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div x-data="{ page: 'login' }">
+            <template x-if="page === 'login'">
+                <div>
+                    <div x-data="loginData()">
+                        <form
+                            action="/auth/login"
+                            method="POST"
+                            @submit.prevent="submit"
+                        >
+                            <div>
+                                <label for="email">Email</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    x-model="formData.email"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label for="password">Password</label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    x-model="formData.password"
+                                    required
+                                />
+                            </div>
+
+                            <button type="submit">Login</button>
+                        </form>
+                    </div>
+                    <button @click="page = 'signup'">Go to Signup</button>
+                </div>
+            </template>
+
+            <template x-if="page === 'signup'">
+                <div>
+                    <div x-data="signupData()">
+                        <form
+                            action="/auth/register"
+                            method="POST"
+                            @submit.prevent="submit"
+                        >
+                            <div>
+                                <label for="name">Full Name</label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    x-model="formData.full_name"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label for="email">Email</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    x-model="formData.email"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label for="password">Password</label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    x-model="formData.password"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label for="confirmPassword"
+                                    >Confirm Password</label
+                                >
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    x-model="formData.confirmPassword"
+                                    required
+                                />
+                            </div>
+
+                            <template x-if="passwordMismatch">
+                                <p>Passwords do not match.</p>
+                            </template>
+
+                            <button type="submit" :disabled="passwordMismatch">
+                                Signup
+                            </button>
+                        </form>
+                    </div>
+                    <button @click="page = 'login'">Go to Login</button>
+                </div>
+            </template>
+        </div>
+    </body>
+</html>

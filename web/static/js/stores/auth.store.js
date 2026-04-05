@@ -1,6 +1,6 @@
-import { api } from "../api.js";
+import api from "../api.js";
 
-export const authStore = {
+const authStore = {
     user: null,
     loading: true,
 
@@ -19,3 +19,5 @@ export const authStore = {
         window.location.reload();
     },
 };
+
+export default authStore;

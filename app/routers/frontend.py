@@ -12,16 +12,6 @@ async def home():
     return FileResponse(BASE_PATH / "index.html")
 
 
-@router.get("/signup")
-async def signup():
-    return FileResponse(BASE_PATH / "signup.html")
-
-
-@router.get("/login")
-async def login():
-    return FileResponse(BASE_PATH / "login.html")
-
-
-@router.get("/data")
-async def data():
-    return FileResponse(BASE_PATH / "data.html")
+@router.get("/auth")
+async def auth():
+    return FileResponse(BASE_PATH / "auth.html")
