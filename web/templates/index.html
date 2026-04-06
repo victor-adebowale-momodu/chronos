@@ -2,7 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />i
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        i
         <title>ChronOS</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -20,25 +21,50 @@
         <script type="module" src="/static/js/app.js"></script>
     </head>
 
-    <body>
+    <body x-data>
         <nav class="navbar">
             <div class="navbar-logo">
                 <span class="material-symbols-outlined"> hourglass </span>
                 <p class="navbar-title">CHRONOS</p>
             </div>
-            <span class="material-symbols-outlined"> account_circle </span>
+
+            <template x-if="!$store.auth.user && !$store.auth.loading">
+                <span class="material-symbols-outlined"> account_circle </span>
+            </template>
+
+            <template x-if="$store.auth.user">
+                <div class="user-initials"><p>VAM</p></div>
+            </template>
         </nav>
 
         <div class="timer-circle">
-            <p class="timer-text">25:00</p>
+            <p class="timer-text" x-text="$store.timer.format"></p>
         </div>
 
         <div class="btn-group">
-            <button class="btn-add">
-                <span class="material-symbols-outlined"> add </span>1min
-            </button>
-            <button class="btn-start">
-                <span class="material-symbols-outlined"> play_arrow </span>Start
+            <template x-if="$store.timer.state === 'idle'">
+                <button class="btn-add" @click="$store.timer.addToTimer()">
+                    <span class="material-symbols-outlined"> add </span> 1min
+                </button>
+            </template>
+            
+            <template x-if="$store.timer.state !== 'idle'">
+                <button class="btn-add" @click="$store.timer.reset()">
+                    <span class="material-symbols-outlined"> replay </span> Reset
+                </button>
+            </template>
+
+            <button
+                class="btn-start"
+                @click="$store.timer.state === 'running' ? $store.timer.pause() : $store.timer.start()"
+            >
+                <span
+                    class="material-symbols-outlined"
+                    x-text="$store.timer.state === 'running' ? 'pause' : 'play_arrow'"
+                ></span>
+                <p
+                    x-text="$store.timer.state === 'running' ? 'Pause' : 'Play'"
+                ></p>
             </button>
         </div>
     </body>

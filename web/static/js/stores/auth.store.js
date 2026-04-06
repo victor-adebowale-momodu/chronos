@@ -13,6 +13,14 @@ const authStore = {
         this.loading = false;
     },
 
+    get userInitials() {
+        if (this.user) {
+            const names = this.user.full_name.split(" ");
+            return names.map((name) => name[0].toUpperCase()).join("");
+        }
+        return "";
+    },
+
     async logout() {
         await api.logout();
         this.user = null;
