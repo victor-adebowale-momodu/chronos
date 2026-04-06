@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from sqlalchemy import text
+from fastapi.staticfiles import StaticFiles
 
 from app.auth import auth_backend
 from app.database import connect_db, engine
@@ -20,6 +20,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.mount("/static", StaticFiles(directory="web/static"), name="static")
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),

@@ -4,12 +4,6 @@
         <meta charset="UTF-8" />
         <title>ChronOS</title>
 
-        <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-        ></script>
-        <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-
         <style>
             body {
                 margin: 0;
@@ -21,10 +15,12 @@
                 font-family: sans-serif;
             }
         </style>
+
+        <script type="module" src="/static/js/app.js"></script>
     </head>
 
     <body x-data>
-        <nav x-init="$store.auth.isUserAuthenticated()">
+        <nav>
             <template x-if="$store.auth.user">
                 <div>
                     <span x-text="$store.auth.user.full_name"></span>
@@ -69,147 +65,5 @@
                 </button>
             </div>
         </div>
-
-        <script>
-            const DEFAULT_DURATION_SECS = 1 * 60;
-            const INCREMENT_DURATION_SECS = 60;
-
-            const api = {
-                async getMe() {
-                    const response = await fetch("/users/me");
-                    if (!response.ok) throw new Error("User not authenticated");
-                    return response.json();
-                },
-
-                async logout() {
-                    await fetch("/auth/logout", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                    });
-                },
-
-                async createSession(payload) {
-                    await fetch("/api/sessions", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: payload,
-                    });
-                },
-            };
-
-            document.addEventListener("alpine:init", () => {
-                Alpine.store("auth", {
-                    user: null,
-                    loading: true,
-
-                    async isUserAuthenticated() {
-                        try {
-                            this.user = await api.getMe();
-                        } catch (error) {
-                            console.error(error);
-                        }
-                        this.loading = false;
-                    },
-
-                    async logout() {
-                        await api.logout();
-                        this.user = null;
-                        window.location.reload();
-                    },
-                });
-
-                Alpine.store("timer", {
-                    seconds: Number(
-                        localStorage.getItem("chronos_seconds") ??
-                            DEFAULT_DURATION_SECS,
-                    ),
-                    state: localStorage.getItem("chronos_state") ?? "idle",
-                    _interval: null,
-
-                    init() {
-                        if (this.state === "running") {
-                            this.start();
-                        }
-                    },
-
-                    _saveState() {
-                        localStorage.setItem("chronos_seconds", this.seconds);
-                        localStorage.setItem("chronos_state", this.state);
-                    },
-
-                    _startSession() {
-                        localStorage.setItem(
-                            "chronos_session",
-                            JSON.stringify({
-                                start_datetime: new Date(),
-                                set_duration: this.seconds,
-                            }),
-                        );
-                    },
-
-                    async _saveSession() {
-                        const session = localStorage.getItem("chronos_session");
-                        const payload = [
-                            {
-                                ...JSON.parse(session),
-                                end_datetime: new Date(),
-                            },
-                        ];
-                        const user = Alpine.store("auth").user;
-                        if (user) {
-                            console.log(
-                                "Saving Session",
-                                JSON.stringify(payload),
-                            );
-                            await api.createSession(JSON.stringify(payload));
-                        }
-                    },
-
-                    start() {
-                        if (this.state === "idle") this._startSession();
-
-                        if (this._interval) clearInterval(this._interval);
-                        this.state = "running";
-                        this._saveState();
-
-                        this._interval = setInterval(async () => {
-                            if (this.seconds > 0) {
-                                this.seconds--;
-                                this._saveState();
-                            } else {
-                                await this._saveSession();
-                                this.reset();
-                            }
-                        }, 1000);
-                    },
-
-                    pause() {
-                        this.state = "paused";
-                        this._saveState();
-                        clearInterval(this._interval);
-                        this._interval = null;
-                    },
-
-                    reset() {
-                        this.pause();
-                        this.state = "idle";
-                        this.seconds = DEFAULT_DURATION_SECS;
-                        this._saveState();
-                    },
-
-                    addToTimer() {
-                        this.seconds += INCREMENT_DURATION_SECS;
-                    },
-
-                    get format() {
-                        const mins = String(
-                            Math.floor(this.seconds / 60),
-                        ).padStart(2, "0");
-                        const secs = String(this.seconds % 60).padStart(2, "0");
-                        return `${mins}:${secs}`;
-                    },
-                });
-            });
-        </script>
     </body>
 </html>
