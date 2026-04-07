@@ -72,6 +72,7 @@ const timerStore = {
 
     addToTimer() {
         this.seconds += INCREMENT_DURATION_SECS;
+        this._saveState();
     },
 
     get format() {
