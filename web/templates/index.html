@@ -3,7 +3,6 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        i
         <title>ChronOS</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -47,10 +46,11 @@
                     <span class="material-symbols-outlined"> add </span> 1min
                 </button>
             </template>
-            
+
             <template x-if="$store.timer.state !== 'idle'">
                 <button class="btn-add" @click="$store.timer.reset()">
-                    <span class="material-symbols-outlined"> replay </span> Reset
+                    <span class="material-symbols-outlined"> replay </span>
+                    Reset
                 </button>
             </template>
 
@@ -62,10 +62,28 @@
                     class="material-symbols-outlined"
                     x-text="$store.timer.state === 'running' ? 'pause' : 'play_arrow'"
                 ></span>
-                <p
+                <span
                     x-text="$store.timer.state === 'running' ? 'Pause' : 'Play'"
-                ></p>
+                ></span>
             </button>
         </div>
+
+        <div class="stats">
+            <span class="material-symbols-outlined stats-icon">
+                equalizer
+            </span>
+            <div class="stats-text">
+                <p class="stats-sessions">4 sessions</p>
+                <p class="stats-time">1h 40m</p>
+            </div>
+            <button class="stats-expand">
+                <span class="material-symbols-outlined"> expand_content </span>
+            </button>
+        </div>
+
+        <button class="status-badge">
+            <div class="status-dot"></div>
+            <span>Last Synced: yesterday</span>
+        </button>
     </body>
 </html>
