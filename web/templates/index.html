@@ -28,7 +28,32 @@
             </div>
 
             <template x-if="!$store.auth.user && !$store.auth.loading">
-                <span class="material-symbols-outlined"> account_circle </span>
+                <div x-data="{ authModalOpen: false }">
+                    <button
+                        class="unauthenticated-user"
+                        @click="authModalOpen = true"
+                    >
+                        <span class="material-symbols-outlined">
+                            account_circle
+                        </span>
+                    </button>
+
+                    <template x-teleport="body">
+                        <div
+                            class="modal-overlay"
+                            x-show="authModalOpen"
+                            x-transition.opacity
+                        >
+                            <div
+                                class="modal-content"
+                                @click.outside="authModalOpen = false"
+                                @keydown.escape.window="authModalOpen = false"
+                            >
+                                <h2 class="navbar-title">Settings</h2>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </template>
 
             <template x-if="$store.auth.user">

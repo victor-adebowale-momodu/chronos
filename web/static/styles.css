@@ -48,6 +48,11 @@ body {
     color: #7b7fc4;
 }
 
+.unauthenticated-user {
+    background: none;
+    border: none;
+}
+
 .timer-circle {
     width: 280px;
     height: 280px;
@@ -174,4 +179,47 @@ body {
 
 .stats-expand:hover {
     color: whitesmoke;
+}
+
+.status-badge {
+    margin-top: 64px;
+    display: flex;
+    align-items: center;
+    padding: 4px 4px;
+    gap: 8px;
+    border-radius: 12px;
+    border: 1px solid #7b7fc4;
+    background-color: #3a3d5c;
+    color: whitesmoke;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: gold;
+    border-radius: 50%;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(17, 20, 54, 0.8);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #1a1f45;
+    border: 1px solid #3a3d5c;
+    border-radius: 24px;
+    padding: 32px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
