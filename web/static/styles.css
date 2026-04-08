@@ -215,7 +215,8 @@ body {
 
 .modal-content {
     width: 480px;
-    height: 640px;
+    height: auto;
+    min-height: 480px;
     padding: 32px;
     background: #3a3d5c;
     border: 2px solid #7b7fc4;
@@ -225,13 +226,26 @@ body {
 
 .modal-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 12px;
 }
 
+.header-text-group {
+    display: flex;
+    flex-direction: column;
+}
+
 .modal-title {
     font-weight: 600;
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.modal-subtitle {
+    margin: 4px 0 0 0;
+    max-width: 280px;
+    opacity: 0.7;
 }
 
 .auth-form {
@@ -270,6 +284,12 @@ body {
     background-color: #1a1f45;
 }
 
+.alt-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
 .btn-continue {
     padding: 16px 32px;
     border-radius: 48px;
@@ -301,7 +321,7 @@ body {
     display: flex;
     align-items: center;
     width: 100%;
-    margin: 8px 0;
+    margin: 20px 0;
 }
 
 .separator-text {
@@ -310,4 +330,67 @@ body {
     color: #7b7fc4;
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+.auth-switch {
+    text-align: center;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7b7fc4;
+    font-size: 14px;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+.stats-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.stats-summary {
+    display: flex;
+    gap: 16px;
+}
+
+.stats-card {
+    width: 200px;
+    height: 100px;
+    background-color: #3a3d60;
+    border: 2px solid #7b7fc4;
+    border-radius: 16px;
+}
+
+.stat {
+    margin: 16px 0 16px 16px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #7b7fc4;
+}
+
+.stat-value {
+    margin: 0 16px 16px 16px;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.stat-unit {
+    font-size: 14px;
+    font-weight: 300;
+}
+
+.close-btn {
+    margin: 16px 0;
+    width: 100%;
+}
+
+.stats-chart-wrapper {
+    margin: 32px 0;
 }
