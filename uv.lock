@@ -216,7 +216,6 @@ dependencies = [
     { name = "dotenv-cli" },
     { name = "fastapi", extra = ["standard"] },
     { name = "fastapi-users", extra = ["sqlalchemy"] },
-    { name = "jinja2" },
     { name = "python-dotenv" },
     { name = "sqlalchemy", extra = ["asyncio"] },
 ]
@@ -228,7 +227,6 @@ requires-dist = [
     { name = "dotenv-cli", specifier = ">=3.4.1" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.135.2" },
     { name = "fastapi-users", extras = ["sqlalchemy"], specifier = ">=15.0.4" },
-    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.48" },
 ]
