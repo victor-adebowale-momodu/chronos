@@ -1,4 +1,4 @@
-import api from "../api.js";
+import api from "../services/api.js";
 
 export function signupData() {
     return {

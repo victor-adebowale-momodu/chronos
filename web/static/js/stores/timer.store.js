@@ -1,6 +1,12 @@
-import { getSetting, setSetting, createSession } from "../db.js";
+import { getSetting, setSetting, createSession } from "../services/db.js";
+import {
+    playChime,
+    notify,
+    updateMediaSession,
+    showPersistentNotification,
+} from "../services/notifications.js";
 
-const DEFAULT_DURATION_SECS = 1 * 60;
+const DEFAULT_DURATION_SECS = 25 * 60;
 const INCREMENT_DURATION_SECS = 60;
 
 const timerStore = {
@@ -15,6 +21,17 @@ const timerStore = {
         );
         this.state = await getSetting("chronos_state", "idle");
         if (this.state === "running") await this.start();
+
+        navigator.serviceWorker.addEventListener("message", (event) => {
+            if (event.data.type === "TIMER_ACTION") {
+                if (event.data.action === "pause") this.pause();
+                if (event.data.action === "resume") this.start();
+                if (event.data.action === "reset") this.reset();
+            }
+        });
+
+        window.addEventListener("timer-resume", () => this.start());
+        window.addEventListener("timer-pause", () => this.pause());
     },
 
     async _saveState() {
@@ -39,7 +56,10 @@ const timerStore = {
     },
 
     async start() {
-        if (this.state === "idle") await this._startSession();
+        if (this.state === "idle") {
+            await this._startSession();
+            notify("Timer Started", { body: "Stay focused!" });
+        }
         if (this._interval) clearInterval(this._interval);
 
         this.state = "running";
@@ -49,11 +69,15 @@ const timerStore = {
             if (this.seconds > 0) {
                 this.seconds--;
                 await this._saveState();
+
+                updateMediaSession(this.seconds, this.state, this.format);
+                showPersistentNotification(this.format, this.state);
             } else {
-                await this._saveSession();
-                await this.reset();
+                await this.onTimerComplete();
             }
         }, 1000);
+
+        showPersistentNotification(this.format, this.state);
     },
 
     async pause() {
@@ -61,6 +85,9 @@ const timerStore = {
         await this._saveState();
         clearInterval(this._interval);
         this._interval = null;
+
+        updateMediaSession(this.seconds, this.state, this.format);
+        showPersistentNotification(this.format, this.state);
     },
 
     async reset() {
@@ -79,6 +106,16 @@ const timerStore = {
         const mins = String(Math.floor(this.seconds / 60)).padStart(2, "0");
         const secs = String(this.seconds % 60).padStart(2, "0");
         return `${mins}:${secs}`;
+    },
+
+    async onTimerComplete() {
+        playChime();
+        notify("Time is up!", {
+            body: "Great job! Take a break.",
+            requireInteraction: true,
+        });
+        await this._saveSession();
+        await this.reset();
     },
 };
 
