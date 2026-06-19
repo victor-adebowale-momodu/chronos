@@ -4,6 +4,12 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>ChronOS | The Timely Productivity OS</title>
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="192x192"
+            href="/static/icons/icon-192.png"
+        />
 
         <!-- PWA -->
         <link rel="manifest" href="/manifest.json" />
@@ -33,7 +39,11 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <link rel="stylesheet" href="/static/styles.css" />
         <script type="module" src="/static/js/app.js"></script>
-        <script type="module" src="/static/js/charts.js"></script>
+        <script type="module" src="/static/js/components/charts.js"></script>
+        <script
+            type="module"
+            src="/static/js/services/notifications.js"
+        ></script>
     </head>
     <body x-data>
         <!--Navbar-->

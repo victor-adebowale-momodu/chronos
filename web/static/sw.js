@@ -1,12 +1,13 @@
-const CACHE_NAME = "chronos-v1";
+const CACHE_NAME = "chronos-v2";
 
 const STATIC_ASSETS = [
     "/",
     "/static/styles.css",
     "/static/js/app.js",
-    "/static/js/charts.js",
-    "/static/js/api.js",
-    "/static/js/db.js",
+    "/static/js/components/charts.js",
+    "/static/js/services/api.js",
+    "/static/js/services/db.js",
+    "/static/js/services/notifications.js",
     "https://cdn.jsdelivr.net/npm/chart.js",
 ];
 

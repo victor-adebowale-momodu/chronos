@@ -1,2 +1,2 @@
 # ChronOS
-A time-based operating system
+The Timely Productivity OS
