@@ -1,10 +1,4 @@
 import { getSetting, setSetting, createSession } from "../services/db.js";
-import {
-    playChime,
-    notify,
-    updateMediaSession,
-    showPersistentNotification,
-} from "../services/notifications.js";
 
 const DEFAULT_DURATION_SECS = 25 * 60;
 const INCREMENT_DURATION_SECS = 60;
@@ -58,7 +52,6 @@ const timerStore = {
     async start() {
         if (this.state === "idle") {
             await this._startSession();
-            notify("Timer Started", { body: "Stay focused!" });
         }
         if (this._interval) clearInterval(this._interval);
 
@@ -69,15 +62,10 @@ const timerStore = {
             if (this.seconds > 0) {
                 this.seconds--;
                 await this._saveState();
-
-                updateMediaSession(this.seconds, this.state, this.format);
-                showPersistentNotification(this.format, this.state);
             } else {
                 await this.onTimerComplete();
             }
         }, 1000);
-
-        showPersistentNotification(this.format, this.state);
     },
 
     async pause() {
@@ -85,9 +73,6 @@ const timerStore = {
         await this._saveState();
         clearInterval(this._interval);
         this._interval = null;
-
-        updateMediaSession(this.seconds, this.state, this.format);
-        showPersistentNotification(this.format, this.state);
     },
 
     async reset() {
@@ -109,11 +94,6 @@ const timerStore = {
     },
 
     async onTimerComplete() {
-        playChime();
-        notify("Time is up!", {
-            body: "Great job! Take a break.",
-            requireInteraction: true,
-        });
         await this._saveSession();
         await this.reset();
     },

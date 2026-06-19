@@ -80,21 +80,3 @@ self.addEventListener("fetch", (event) => {
         }),
     );
 });
-
-self.addEventListener("notificationclick", (event) => {
-    event.notification.close();
-    const action = event.action;
-
-    event.waitUntil(
-        clients
-            .matchAll({ type: "window", includeUncontrolled: true })
-            .then((clientList) => {
-                for (const client of clientList) {
-                    client.postMessage({
-                        type: "TIMER_ACTION",
-                        action: action,
-                    });
-                }
-            }),
-    );
-});
