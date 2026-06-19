@@ -1,82 +1,85 @@
-const CACHE_NAME = "chronos-v2";
+importScripts(
+    "https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js",
+);
 
-const STATIC_ASSETS = [
-    "/",
-    "/static/styles.css",
-    "/static/js/app.js",
-    "/static/js/components/charts.js",
-    "/static/js/services/api.js",
-    "/static/js/services/db.js",
-    "/static/js/services/notifications.js",
-    "https://cdn.jsdelivr.net/npm/chart.js",
-];
+const { precacheAndRoute, cleanupOutdatedCaches } = workbox.precaching;
+const { registerRoute } = workbox.routing;
+const { CacheFirst, NetworkFirst, StaleWhileRevalidate } = workbox.strategies;
+const { ExpirationPlugin } = workbox.expiration;
+const { CacheableResponsePlugin } = workbox.cacheableResponse;
 
-const FONT_URLS = [
-    "https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap",
-    "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap",
-];
+precacheAndRoute(__PRECACHE_MANIFEST__);
+cleanupOutdatedCaches();
 
-self.addEventListener("install", (event) => {
+registerRoute(
+    ({ url }) =>
+        url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/"),
+    new NetworkFirst({ cacheName: "api-cache" }),
+);
+
+registerRoute(
+    ({ url }) => url.hostname === "fonts.googleapis.com",
+    new StaleWhileRevalidate({
+        cacheName: "google-fonts-stylesheets",
+    }),
+);
+
+registerRoute(
+    ({ url }) => url.hostname === "fonts.gstatic.com",
+    new CacheFirst({
+        cacheName: "google-fonts-webfonts",
+        plugins: [
+            new CacheableResponsePlugin({ statuses: [0, 200] }),
+            new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 }), // 1 year
+        ],
+    }),
+);
+
+registerRoute(
+    ({ url }) => url.href.includes("Material+Symbols"),
+    new CacheFirst({
+        cacheName: "material-symbols",
+        plugins: [
+            new CacheableResponsePlugin({ statuses: [0, 200] }),
+            new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 }), // 1 year
+        ],
+    }),
+);
+
+registerRoute(
+    ({ url }) => url.hostname === "cdn.jsdelivr.net",
+    new CacheFirst({
+        cacheName: "cdn-assets",
+        plugins: [
+            new CacheableResponsePlugin({ statuses: [0, 200] }),
+            new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 30 }), // 30 days
+        ],
+    }),
+);
+
+self.addEventListener("push", (event) => {
+    const data = event.data?.json() ?? {
+        title: "ChronOS",
+        body: "Time check!",
+    };
     event.waitUntil(
-        caches
-            .open(CACHE_NAME)
-            .then((cache) => cache.addAll(STATIC_ASSETS))
-            .then(() => self.skipWaiting()),
+        self.registration.showNotification(data.title, {
+            body: data.body,
+            icon: "/static/icons/icon-192.png",
+            badge: "/static/icons/icon-192.png",
+        }),
     );
+});
+
+self.addEventListener("notificationclick", (event) => {
+    event.notification.close();
+    event.waitUntil(clients.openWindow("/"));
+});
+
+self.addEventListener("install", () => {
+    self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-    event.waitUntil(
-        caches
-            .keys()
-            .then((keys) =>
-                Promise.all(
-                    keys
-                        .filter((key) => key !== CACHE_NAME)
-                        .map((key) => caches.delete(key)),
-                ),
-            )
-            .then(() => self.clients.claim()),
-    );
-});
-
-self.addEventListener("fetch", (event) => {
-    const { request } = event;
-    const url = new URL(request.url);
-
-    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/")) {
-        return;
-    }
-
-    if (
-        url.hostname === "fonts.googleapis.com" ||
-        url.hostname === "fonts.gstatic.com"
-    ) {
-        event.respondWith(
-            caches.match(request).then((cached) => {
-                if (cached) return cached;
-                return fetch(request).then((response) => {
-                    caches
-                        .open(CACHE_NAME)
-                        .then((cache) => cache.put(request, response.clone()));
-                    return response;
-                });
-            }),
-        );
-        return;
-    }
-
-    event.respondWith(
-        caches.match(request).then((cached) => {
-            if (cached) return cached;
-            return fetch(request).then((response) => {
-                if (request.method === "GET" && response.status === 200) {
-                    caches
-                        .open(CACHE_NAME)
-                        .then((cache) => cache.put(request, response.clone()));
-                }
-                return response;
-            });
-        }),
-    );
+    event.waitUntil(self.clients.claim());
 });

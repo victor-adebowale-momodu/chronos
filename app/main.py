@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette_compress import CompressMiddleware
 
 from app.auth import auth_backend
 from app.database import connect_db, engine
@@ -19,6 +20,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(CompressMiddleware, zstd_level=6, brotli_quality=6, gzip_level=6)
 
 app.mount("/static", StaticFiles(directory="web/static"), name="static")
 

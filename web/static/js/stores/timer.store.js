@@ -1,4 +1,8 @@
 import { getSetting, setSetting, createSession } from "../services/db.js";
+import {
+    requestNotificationPermission,
+    notifyTimeProgress,
+} from "../services/notifications.js";
 
 const DEFAULT_DURATION_SECS = 25 * 60;
 const INCREMENT_DURATION_SECS = 60;
@@ -15,15 +19,6 @@ const timerStore = {
         );
         this.state = await getSetting("chronos_state", "idle");
         if (this.state === "running") await this.start();
-
-        navigator.serviceWorker.addEventListener("message", (event) => {
-            if (event.data.type === "TIMER_ACTION") {
-                if (event.data.action === "pause") this.pause();
-                if (event.data.action === "resume") this.start();
-                if (event.data.action === "reset") this.reset();
-            }
-        });
-
         window.addEventListener("timer-resume", () => this.start());
         window.addEventListener("timer-pause", () => this.pause());
     },
@@ -51,13 +46,13 @@ const timerStore = {
 
     async start() {
         if (this.state === "idle") {
+            await requestNotificationPermission();
             await this._startSession();
+            notifyTimeProgress("Focus session started — you've got this 🚀");
         }
         if (this._interval) clearInterval(this._interval);
-
         this.state = "running";
         await this._saveState();
-
         this._interval = setInterval(async () => {
             if (this.seconds > 0) {
                 this.seconds--;
@@ -73,6 +68,11 @@ const timerStore = {
         await this._saveState();
         clearInterval(this._interval);
         this._interval = null;
+        const mins = Math.floor(this.seconds / 60);
+        const secs = this.seconds % 60;
+        notifyTimeProgress(
+            `Paused — ${mins}m ${secs}s remaining on your session.`,
+        );
     },
 
     async reset() {
@@ -95,6 +95,7 @@ const timerStore = {
 
     async onTimerComplete() {
         await this._saveSession();
+        notifyTimeProgress("Session complete! Time for a break 🎉");
         await this.reset();
     },
 };

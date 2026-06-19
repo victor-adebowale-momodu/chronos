@@ -12,4 +12,5 @@ dependencies = [
     "fastapi[standard]>=0.135.2",
     "python-dotenv>=1.2.2",
     "sqlalchemy[asyncio]>=2.0.48",
+    "starlette-compress>=1.7.1",
 ]
