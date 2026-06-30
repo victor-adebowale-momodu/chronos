@@ -1,12 +1,11 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from starlette_compress import CompressMiddleware
 
 from app.auth import auth_backend
 from app.database import connect_db, engine
-from app.routers import backend, frontend
+from app.routers import backend
 from app.schemas.users import UserCreate, UserRead, UserUpdate
 from app.users import fastapi_users
 
@@ -20,9 +19,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.add_middleware(CompressMiddleware, zstd_level=6, brotli_quality=6, gzip_level=6)
 
-app.mount("/static", StaticFiles(directory="web/static"), name="static")
+app.add_middleware(CompressMiddleware, zstd_level=6, brotli_quality=6, gzip_level=6)
+app.frontend("/", directory="web/dist", fallback=None)
+
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
@@ -46,5 +46,4 @@ app.include_router(
 )
 
 
-app.include_router(frontend.router)
 app.include_router(backend.router)
