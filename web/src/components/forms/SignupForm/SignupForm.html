@@ -1,0 +1,30 @@
+<form id="signup-form" class="auth-form" action="/auth/register" method="POST">
+    <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required />
+    </div>
+
+    <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required />
+    </div>
+
+    <div class="input-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            required
+        />
+    </div>
+
+    <button type="submit" class="btn-start">Sign Up</button>
+
+    <div class="auth-switch">
+        <span>Already have an account? Go to</span>
+        <button id="btn-goto-login" type="button" class="btn-link">
+            Login
+        </button>
+    </div>
+</form>

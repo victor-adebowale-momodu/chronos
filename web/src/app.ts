@@ -1,8 +1,7 @@
-import { Navbar } from "./components/Navbar/Navbar";
+import Navbar from "@/components/sections/Navbar/Navbar";
 
 export function App(): string {
     return `
         ${Navbar()}
-        <!-- next components get added here as you port them -->
     `;
 }

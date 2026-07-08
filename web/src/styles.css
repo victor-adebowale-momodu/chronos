@@ -1,4 +1,4 @@
-@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/geist-mono";
 
 * {
     box-sizing: border-box;
@@ -14,7 +14,7 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    font-family: "Space Grotesk Variable", sans-serif;
+    font-family: "Geist Mono Variable", sans-serif;
 }
 
 .navbar {
