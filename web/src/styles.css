@@ -1,4 +1,4 @@
-@import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/plus-jakarta-sans";
 
 * {
     box-sizing: border-box;
@@ -14,7 +14,11 @@
 body {
     background-color: var(--color-base);
     min-height: 100vh;
-    font-family: "Geist Mono Variable", sans-serif;
+    font-family: "Plus Jakarta Sans Variable", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .navbar {
@@ -33,7 +37,7 @@ body {
 .navbar svg {
     fill: var(--color-accent);
     width: clamp(24px, 2.5vw, 32px);
-    height: clamp(24px, 2.5vw, 32px);
+    aspect-ratio: 1;
     display: block;
 }
 
@@ -45,7 +49,7 @@ body {
 
 .navbar-title {
     font-size: clamp(18px, 1.8vw, 22px);
-    font-weight: 500;
+    font-weight: 700;
     color: var(--color-accent);
 }
 
@@ -53,4 +57,128 @@ body {
     background: none;
     border: none;
     cursor: pointer;
+}
+
+@property --timer-progress {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 360deg;
+}
+
+.timer-circle {
+    --timer-progress: 360deg;
+
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: clamp(240px, 40vw, 360px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+
+    animation: countdown 25s linear forwards;
+}
+
+.timer-circle::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    border-radius: inherit;
+    background: conic-gradient(
+        var(--color-accent) var(--timer-progress),
+        rgb(255 255 255 / 0.15) 0deg
+    );
+
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 12px),
+        #000 calc(100% - 12px)
+    );
+
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 12px),
+        #000 calc(100% - 12px)
+    );
+}
+
+@keyframes countdown {
+    to {
+        --timer-progress: 0deg;
+    }
+}
+
+.timer-text {
+    margin: 0;
+    font-size: clamp(32px, 3.2vw, 48px);
+    font-weight: 600;
+    color: whitesmoke;
+    letter-spacing: -0.05em;
+}
+
+.btn-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(12px, 1.5vw, 20px);
+    margin-top: clamp(48px, 6vw, 80px);
+}
+
+.btn-group svg {
+    width: clamp(18px, 2vw, 24px);
+    aspect-ratio: 1;
+}
+
+.btn-group button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    gap: clamp(6px, 0.8vw, 10px);
+    border-radius: 9999px;
+    font-size: 12px;
+    padding: clamp(12px, 1.25vw, 16px) clamp(24px, 2.5vw, 32px);
+    transition:
+        transform 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.btn-timer {
+    background-color: var(--color-accent);
+    color: var(--color-base);
+}
+
+.btn-group button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-group button:active {
+    transform: translateY(1px);
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: fit-content;
+    margin: clamp(64px, 7.2vw, 80px) auto 0 auto;
+    padding: 4px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--color-accent);
+    background-color: #3a3d5c;
+    color: whitesmoke;
+    cursor: pointer;
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: gold;
+    border-radius: 50%;
 }
