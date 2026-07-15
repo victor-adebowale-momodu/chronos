@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-    resolve: { tsconfigPaths: true },
+	resolve: { tsconfigPaths: true },
 });

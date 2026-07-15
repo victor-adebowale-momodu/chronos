@@ -4,11 +4,14 @@
     </div>
 
     <div class="btn-group">
-        <button id="btn-timer-add" class="btn-timer">
-            {{add}}<span>1min</span>
+        <button type="button" id="btn-timer-add" class="btn-timer">
+            <span data-template="add"></span>
+            <span>1min</span>
         </button>
-        <button id="btn-timer-toggle" class="btn-timer">
-            {{playArrow}}<span>Play</span>
+
+        <button type="button" id="btn-timer-toggle" class="btn-timer">
+            <span data-template="playArrow"></span>
+            <span>Play</span>
         </button>
     </div>
 </div>
