@@ -8,11 +8,16 @@
                     sessions across devices.
                 </p>
             </div>
-            <button id="btn-auth-modal-close" class="stats-expand">
-                {{close}}
+            <button
+                type="button"
+                id="btn-auth-modal-close"
+                class="stats-expand"
+            >
+                <span data-template="close"></span>
             </button>
         </div>
 
-        {{signupForm}} {{altAuth}}
+        <span data-template="signupForm"></span>
+        <span data-template="altAuth"></span>
     </div>
 </div>
