@@ -2,6 +2,7 @@ import add from "@material-symbols/svg-400/outlined/add.svg?raw";
 import pause from "@material-symbols/svg-400/outlined/pause.svg?raw";
 import playArrow from "@material-symbols/svg-400/outlined/play_arrow.svg?raw";
 import refresh from "@material-symbols/svg-400/outlined/refresh.svg?raw";
+import { getSetting, setSetting } from "@/services/db";
 import { render } from "@/utils/template";
 import html from "./Timer.html?raw";
 
@@ -9,7 +10,7 @@ export default function Timer(): string {
     return render(html, { add, playArrow });
 }
 
-const DEFAULT_SECONDS = 30;
+const DEFAULT_SECONDS = 25 * 60;
 
 interface TimerState {
     totalSeconds: number;
@@ -20,18 +21,50 @@ interface TimerState {
     intervalId: number | undefined;
 }
 
-function createInitialState(): TimerState {
+async function newTimerState(): Promise<TimerState> {
+    const defaultSeconds = await getSetting(
+        "chronos_default_seconds",
+        DEFAULT_SECONDS,
+    );
+
     return {
-        totalSeconds: DEFAULT_SECONDS,
-        remainingSeconds: DEFAULT_SECONDS,
-        endTime: Date.now() + DEFAULT_SECONDS * 1000,
+        totalSeconds: defaultSeconds,
+        remainingSeconds: defaultSeconds,
+        endTime: Date.now() + defaultSeconds * 1000,
         isRunning: false,
         hasStarted: false,
         intervalId: undefined,
     };
 }
 
-export function timerController(root: HTMLElement): void {
+async function loadTimerState(): Promise<TimerState> {
+    const saved = await getSetting<Omit<TimerState, "intervalId"> | null>(
+        "chronos_timer_state",
+        null,
+    );
+
+    if (saved) {
+        return {
+            ...saved,
+            intervalId: undefined,
+        };
+    }
+
+    return newTimerState();
+}
+
+async function persistTimerState(state: TimerState): Promise<void> {
+    await setSetting("chronos_timer_state", {
+        totalSeconds: state.totalSeconds,
+        remainingSeconds: state.remainingSeconds,
+        endTime: state.endTime,
+        isRunning: state.isRunning,
+        hasStarted: state.hasStarted,
+    });
+}
+
+export async function timerController(root: HTMLElement) {
+    // html elements
     const timerCircle = root.querySelector<HTMLElement>(".timer-circle");
     const timerText = root.querySelector<HTMLElement>(".timer-text");
     const toggleBtn =
@@ -41,9 +74,26 @@ export function timerController(root: HTMLElement): void {
 
     if (!timerCircle || !timerText || !toggleBtn || !modifyBtn) return;
 
-    let state = createInitialState();
+    let state = await loadTimerState();
 
-    function update(seconds: number, total: number) {
+    // timer tick
+    function tick() {
+        state.remainingSeconds = Math.max(
+            0,
+            Math.round((state.endTime - Date.now()) / 1000),
+        );
+        updateUI(state.remainingSeconds, state.totalSeconds);
+
+        if (state.remainingSeconds <= 0) {
+            clearInterval(state.intervalId);
+            state.isRunning = false;
+            void persistTimerState(state);
+            setToggleUI();
+        }
+    }
+
+    // ui
+    function updateUI(seconds: number, total: number) {
         const m = String(Math.floor(seconds / 60)).padStart(2, "0");
         const s = String(seconds % 60).padStart(2, "0");
         timerText.textContent = `${m}:${s}`;
@@ -55,62 +105,89 @@ export function timerController(root: HTMLElement): void {
         );
     }
 
-    function tick() {
+    function setToggleUI() {
+        toggleBtn.innerHTML = `
+                  <span>${state.isRunning ? pause : playArrow}</span>
+                  <span>${state.isRunning ? "Pause" : "Play"}</span>
+              `;
+
+        const showAdd = state.isRunning || !state.hasStarted;
+        modifyBtn.innerHTML = `
+                  <span>${showAdd ? add : refresh}</span>
+                  <span>${showAdd ? "1min" : "Reset"}</span>
+              `;
+    }
+
+    // timer
+    function startTimer() {
+        state.isRunning = true;
+        state.hasStarted = true;
+        state.endTime = Date.now() + state.remainingSeconds * 1000;
+        state.intervalId = window.setInterval(tick, 250);
+        void persistTimerState(state);
+    }
+
+    function pauseTimer() {
         state.remainingSeconds = Math.max(
             0,
             Math.round((state.endTime - Date.now()) / 1000),
         );
-        update(state.remainingSeconds, state.totalSeconds);
-
-        if (state.remainingSeconds <= 0) {
-            clearInterval(state.intervalId);
-            state.isRunning = false;
-            setToggle();
-        }
+        state.isRunning = false;
+        clearInterval(state.intervalId);
+        state.intervalId = undefined;
+        void persistTimerState(state);
     }
 
-    function setToggle() {
-        toggleBtn.innerHTML = `
-            <span>${state.isRunning ? pause : playArrow}</span>
-            <span>${state.isRunning ? "Pause" : "Play"}</span>
-        `;
-
-        const showAdd = state.isRunning || !state.hasStarted;
-        modifyBtn.innerHTML = `
-            <span>${showAdd ? add : refresh}</span>
-            <span>${showAdd ? "1min" : "Reset"}</span>
-        `;
+    async function resetTimer() {
+        clearInterval(state.intervalId);
+        state.intervalId = undefined;
+        state = await newTimerState();
+        void persistTimerState(state);
     }
 
-    toggleBtn.addEventListener("click", () => {
-        state.isRunning = !state.isRunning;
-
+    function addMinute() {
+        state.totalSeconds += 60;
+        state.remainingSeconds += 60;
         if (state.isRunning) {
-            state.hasStarted = true;
-            state.endTime = Date.now() + state.remainingSeconds * 1000;
+            state.endTime += 60 * 1000;
+        }
+
+        void persistTimerState(state);
+    }
+
+    // event listeners
+    toggleBtn.addEventListener("click", () => {
+        state.isRunning ? pauseTimer() : startTimer();
+        setToggleUI();
+    });
+
+    modifyBtn.addEventListener("click", async () => {
+        if (state.isRunning || !state.hasStarted) {
+            addMinute();
+        } else {
+            await resetTimer();
+        }
+
+        updateUI(state.remainingSeconds, state.totalSeconds);
+        setToggleUI();
+    });
+
+    // restore timer state after page reload
+    if (state.isRunning) {
+        state.remainingSeconds = Math.max(
+            0,
+            Math.round((state.endTime - Date.now()) / 1000),
+        );
+
+        if (state.remainingSeconds > 0) {
             state.intervalId = window.setInterval(tick, 250);
         } else {
-            clearInterval(state.intervalId);
+            state.isRunning = false;
+            void persistTimerState(state);
         }
+    }
 
-        setToggle();
-    });
-
-    modifyBtn.addEventListener("click", () => {
-        const showAdd = state.isRunning || !state.hasStarted;
-
-        if (showAdd) {
-            state.totalSeconds += 60;
-            state.remainingSeconds += 60;
-            if (state.isRunning) state.endTime += 60 * 1000;
-        } else {
-            state = createInitialState();
-        }
-
-        update(state.remainingSeconds, state.totalSeconds);
-        setToggle();
-    });
-
-    update(state.remainingSeconds, state.totalSeconds);
-    setToggle();
+    // initial execution
+    updateUI(state.remainingSeconds, state.totalSeconds);
+    setToggleUI();
 }
