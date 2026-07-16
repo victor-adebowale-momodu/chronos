@@ -64,6 +64,8 @@ async function persistTimerState(state: TimerState): Promise<void> {
 }
 
 export async function timerController(root: HTMLElement) {
+    let state = await loadTimerState();
+
     // html elements
     const timerCircle = root.querySelector<HTMLElement>(".timer-circle");
     const timerText = root.querySelector<HTMLElement>(".timer-text");
@@ -73,8 +75,10 @@ export async function timerController(root: HTMLElement) {
         root.querySelector<HTMLButtonElement>("#btn-timer-modify");
 
     if (!timerCircle || !timerText || !toggleBtn || !modifyBtn) return;
-
-    let state = await loadTimerState();
+    const timerCircleEl = timerCircle;
+    const timerTextEl = timerText;
+    const toggleBtnEl = toggleBtn;
+    const modifyBtnEl = modifyBtn;
 
     // timer tick
     function tick() {
@@ -96,23 +100,23 @@ export async function timerController(root: HTMLElement) {
     function updateUI(seconds: number, total: number) {
         const m = String(Math.floor(seconds / 60)).padStart(2, "0");
         const s = String(seconds % 60).padStart(2, "0");
-        timerText.textContent = `${m}:${s}`;
+        timerTextEl.textContent = `${m}:${s}`;
 
         const fraction = seconds / total;
-        timerCircle.style.setProperty(
+        timerCircleEl.style.setProperty(
             "--timer-progress",
             `${fraction * 360}deg`,
         );
     }
 
     function setToggleUI() {
-        toggleBtn.innerHTML = `
+        toggleBtnEl.innerHTML = `
                   <span>${state.isRunning ? pause : playArrow}</span>
                   <span>${state.isRunning ? "Pause" : "Play"}</span>
               `;
 
         const showAdd = state.isRunning || !state.hasStarted;
-        modifyBtn.innerHTML = `
+        modifyBtnEl.innerHTML = `
                   <span>${showAdd ? add : refresh}</span>
                   <span>${showAdd ? "1min" : "Reset"}</span>
               `;
@@ -156,12 +160,12 @@ export async function timerController(root: HTMLElement) {
     }
 
     // event listeners
-    toggleBtn.addEventListener("click", () => {
+    toggleBtnEl.addEventListener("click", () => {
         state.isRunning ? pauseTimer() : startTimer();
         setToggleUI();
     });
 
-    modifyBtn.addEventListener("click", async () => {
+    modifyBtnEl.addEventListener("click", async () => {
         if (state.isRunning || !state.hasStarted) {
             addMinute();
         } else {

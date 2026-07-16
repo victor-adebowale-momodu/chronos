@@ -12,8 +12,8 @@ interface Settings {
 }
 
 class ChronosDB extends Dexie {
-	sessions: EntityTable<Session, "id">;
-	settings: EntityTable<Settings, "key">;
+	sessions!: EntityTable<Session, "id">;
+	settings!: EntityTable<Settings, "key">;
 
 	constructor() {
 		super("chronos_db");
