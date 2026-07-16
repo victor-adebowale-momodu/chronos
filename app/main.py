@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from starlette_compress import CompressMiddleware
 
 from app.auth import auth_backend
+from app.backend import router as backend_router
 from app.database import connect_db, engine
-from app.routers import backend
 from app.schemas.users import UserCreate, UserRead, UserUpdate
 from app.users import fastapi_users
 
@@ -46,4 +46,4 @@ app.include_router(
 )
 
 
-app.include_router(backend.router)
+app.include_router(backend_router)

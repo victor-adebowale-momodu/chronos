@@ -9,6 +9,7 @@
 :root {
 	--color-base: #111436;
 	--color-accent: #7b7fc4;
+	--color-modal-overlay: rgba(17, 20, 54, 0.95);
 }
 
 body {
@@ -181,4 +182,25 @@ body {
 	height: 8px;
 	background-color: gold;
 	border-radius: 50%;
+}
+
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	background-color: var(--color-modal-overlay);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.modal-content {
+	width: 100%;
+	max-width: 480px;
+	max-height: calc(100vh - 2rem);
+	overflow-y: auto;
+	padding: clamp(18px, 2.5vw, 32px);
+	background: #3a3d5c;
+	border: 2px solid #7b7fc4;
+	border-radius: 16px;
 }

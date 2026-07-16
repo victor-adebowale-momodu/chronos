@@ -12,3 +12,8 @@ export function render(template: string, data: Record<string, string>): string {
 
 	return doc.body.innerHTML;
 }
+
+export function required<T>(el: T | null, name: string): T {
+	if (!el) throw new Error(`Missing element: ${name}`);
+	return el;
+}
