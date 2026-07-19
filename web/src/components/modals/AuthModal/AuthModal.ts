@@ -1,6 +1,6 @@
 import close from "@material-symbols/svg-400/outlined/close.svg?raw";
-import AltAuth from "@/components/common/AltAuth/AltAuth";
-import SignupForm from "@/components/forms/SignupForm/SignupForm";
+import AltAuth from "@/components/auth/AltAuth/AltAuth";
+import SignupForm from "@/components/auth/SignupForm/SignupForm";
 import { render, required } from "@/utils";
 import Modal, { modalController } from "../Modal/Modal";
 import html from "./AuthModal.html?raw";
