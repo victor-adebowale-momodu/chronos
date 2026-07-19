@@ -1,4 +1,7 @@
-import AuthModal from "@/components/modals/AuthModal/AuthModal";
+import AuthModal, {
+	authModalController,
+} from "@/components/modals/AuthModal/AuthModal";
+import { showModal } from "@/modal";
 import { required } from "@/utils";
 import html from "./StatusBadge.html?raw";
 
@@ -7,7 +10,7 @@ export default function StatusBadge(): string {
 }
 
 function openAuthModal() {
-	AuthModal();
+	showModal(AuthModal(), authModalController);
 }
 
 export function statusBadgeController(root: HTMLElement) {
@@ -15,6 +18,5 @@ export function statusBadgeController(root: HTMLElement) {
 		root.querySelector<HTMLElement>(".status-badge"),
 		"status-badge",
 	);
-
 	statusBadgeEl.addEventListener("click", openAuthModal);
 }

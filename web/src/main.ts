@@ -1,17 +1,15 @@
 import "./styles.css";
+import { statusBadgeController } from "@/components/sections/StatusBadge/StatusBadge";
 import { timerController } from "@/components/sections/Timer/Timer";
 import { App } from "./app";
 import { required } from "./utils";
 
-const appEl = required(document.querySelector<HTMLDivElement>("#app"), "app");
-const modalEl = required(
-    document.querySelector<HTMLDivElement>("#modal"),
-    "modal",
-);
+const app = required(document.querySelector<HTMLDivElement>("#app"), "app");
 
 async function bootstrap() {
-    appEl.innerHTML = App();
-    timerController(appEl);
+    app.innerHTML = App();
+    timerController(app);
+    statusBadgeController(app);
 }
 
 bootstrap();
