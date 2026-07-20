@@ -204,3 +204,69 @@ body {
     border: 2px solid #7b7fc4;
     border-radius: 16px;
 }
+
+.stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: clamp(48px, 6vw, 80px);
+    background-color: #1a1f45;
+    border-radius: 32px;
+    border: 1px solid #3a3d5c;
+}
+
+.stats-values {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: whitesmoke;
+}
+
+.stats-expand {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 16px;
+    color: #7b7fc4;
+    display: flex;
+    align-items: center;
+}
+
+.stats-values svg {
+    width: 32px;
+    height: 32px;
+    fill: #7b7fc4;
+    margin: 8px;
+}
+
+.stats-expand svg {
+    width: 32px;
+    height: 32px;
+    fill: #7b7fc4;
+}
+
+.stats-expand svg:hover {
+    transform: scale(1.1);
+}
+
+.stats-text {
+    gap: 16px;
+}
+
+.stats-sessions {
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.stats-time {
+    font-size: 10px;
+}
+
+.stats-icon {
+    padding: 8px;
+    background-color: #1f2178;
+    border-radius: 50%;
+    color: #7b7fc4;
+    font-size: 12px;
+}
